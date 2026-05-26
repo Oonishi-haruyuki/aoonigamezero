@@ -1,0 +1,6 @@
+{
+  "name": "Ao Oni: Web Escape",
+  "description": "A survival horror escape game inspired by Ao Oni. Solve puzzles, hide from the blue demon, and escape the mysterious mansion.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
