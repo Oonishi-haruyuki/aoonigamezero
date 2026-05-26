@@ -134,6 +134,16 @@ export const getClassicRooms = (): Record<string, RoomData> => {
       l[1][1] = t('STAIRS_UP', 'mansion_2f_hall');   // Stairs up to 2F
       l[1][2] = t('WARDROBE');                       // Wardrobe to hide
       
+      // Support 4 grand entrance pillars (柱)
+      l[3][3] = t('COLUMN');
+      l[3][8] = t('COLUMN');
+      l[6][3] = t('COLUMN');
+      l[6][8] = t('COLUMN');
+
+      // More furniture (家具)
+      l[1][9] = t('SHELF');
+      l[1][10] = t('SHELF');
+      
       // Escape exit at the bottom
       const exitTile = t('EXIT');
       exitTile.requiredKey = '別館の鍵';            // Needs Annex Key (別館の鍵) to escape under new rules!
@@ -150,47 +160,83 @@ export const getClassicRooms = (): Record<string, RoomData> => {
       
       l[1][9] = t('STAIRS_DOWN', 'mansion_bf_hall'); // Stairs to Basement
       l[1][9].requiredKey = '地下室の鍵'; // Needs basement key!
+
+      // Add a branching winding wall creating a dead end (行き止まり) on the left side!
+      l[7][2] = t('WALL');
+      l[7][3] = t('WALL');
+      l[7][4] = t('WALL');
+      
+      // Column pillars (柱) as obstacles to weave around during a chase
+      l[3][2] = t('COLUMN');
+      l[3][9] = t('COLUMN');
+
+      // Extra furniture decoration (家具)
+      l[1][4] = t('SHELF');
     }),
 
     mansion_1f_living_room: createRoom('mansion_1f_living_room', '本館1F・リビング', { x: 5, y: 8 }, (l) => {
       l[9][5] = t('DOOR', 'mansion_1f_north_hall');
       l[3][5] = t('PLATE');                         // Table plate
+      l[3][4] = t('CHAIR');                         // Chairs around dining table
+      l[3][6] = t('CHAIR');
       l[1][2] = t('WARDROBE');
+      l[1][10] = t('WARDROBE');                     // Second wardrobe
+      l[1][9] = t('COLUMN');                        // Structural element pillar
     }),
 
     mansion_1f_washroom: createRoom('mansion_1f_washroom', '本館1F・洗面所', { x: 10, y: 5 }, (l) => {
       l[5][11] = t('DOOR', 'mansion_1f_north_hall');
       l[2][4] = t('SHELF');                         // Washroom shelf inside
+      l[2][3] = t('SHELF');                         // Extra cabinet (家具)
+      l[1][1] = t('COLUMN');                        // Column inside washroom
+      
+      // Pitfall trap (落とし穴) dropping to B1F Left storage room!
+      l[5][2] = t('HOLE', 'mansion_bf_left');
     }),
 
     mansion_1f_library: createRoom('mansion_1f_library', '本館1F・図書室', { x: 10, y: 5 }, (l) => {
       l[5][11] = t('DOOR', 'mansion_1f_entrance');
       l[4][4] = t('DESK');                         // Library desk with book
+      l[4][3] = t('CHAIR');                        // Reading chair
+      l[4][5] = t('CHAIR');                        // Reading chair
       l[1][2] = t('WARDROBE');
+      l[1][9] = t('COLUMN');                       // Support column
     }),
 
     mansion_1f_bathroom: createRoom('mansion_1f_bathroom', '本館1F・風呂場', { x: 1, y: 5 }, (l) => {
       l[5][0] = t('DOOR', 'mansion_1f_entrance');
       l[3][6] = t('BATHTUB');                      // Bathtub filled with water
       l[1][2] = t('WARDROBE');
+      l[1][9] = t('WARDROBE');                     // Extra hide corner
+      l[1][1] = t('COLUMN');                       // Bath pillar
     }),
 
     mansion_1f_tatami: createRoom('mansion_1f_tatami', '本館1F・畳の部屋', { x: 1, y: 5 }, (l) => {
       l[5][0] = t('DOOR', 'mansion_1f_north_hall');
       l[5][11] = t('DOOR', 'mansion_1f_tatami_fusuma'); // Fusuma doorway where Ao Oni jumps out!
       l[1][5] = t('WALL_SECRET');                  // Peeling wallpaper
+      
+      // Room dividers forming a traditional dead end corner
+      l[3][3] = t('WALL');
+      l[4][3] = t('WALL');
+      l[2][2] = t('COLUMN');
+      l[4][5] = t('CHAIR');
+      l[4][6] = t('PLATE');                        // Tea table plate
     }),
 
     mansion_1f_hidden_room: createRoom('mansion_1f_hidden_room', '本館1F・隠し部屋', { x: 5, y: 8 }, (l) => {
       l[9][5] = t('DOOR', 'mansion_1f_tatami');
       l[5][5] = t('CANDLE');                      // Pitch black room candle
       l[1][2] = t('WARDROBE');                      // This wardrobe can block door/move!
+      l[1][9] = t('COLUMN');                        // Ancient structural pillar
     }),
 
     mansion_1f_barred: createRoom('mansion_1f_barred', '本館1F・格子戸の間', { x: 5, y: 8 }, (l) => {
       l[9][5] = t('DOOR', 'mansion_1f_hidden_room');
       l[4][5] = t('JAIL');                        // Grid lock bars door
       l[2][5] = t('SHELF');                       // Cabinet containing Basement key (地下室の鍵)
+      l[1][1] = t('COLUMN');
+      l[1][10] = t('COLUMN');
     }),
 
     mansion_2f_hall: createRoom('mansion_2f_hall', '本館2F・廊下', { x: 2, y: 2 }, (l) => {
@@ -206,12 +252,30 @@ export const getClassicRooms = (): Record<string, RoomData> => {
       
       l[5][11] = t('DOOR', 'mansion_2f_piano_room');
       l[7][8] = t('WARDROBE');
+
+      // Splitting wall layout to form a central dead end nook at (y=7..9, x=1..2)
+      l[7][3] = t('WALL');
+      l[8][3] = t('WALL');
+      l[9][3] = t('WALL');
+
+      // Grand pillars (柱) as obstacles
+      l[3][10] = t('COLUMN');
+      l[6][6] = t('COLUMN');
+
+      // Cluttering corridors with drawers (家具)
+      l[7][10] = t('SHELF');
+      l[4][1] = t('SHELF');
     }),
 
     mansion_2f_bedroom: createRoom('mansion_2f_bedroom', '本館2F・客室', { x: 2, y: 8 }, (l) => {
       l[9][2] = t('DOOR', 'mansion_2f_hall');
       l[3][5] = t('CHAIR');                        // Moveable chair -> figure 図書室の鍵 under it
       l[1][8] = t('WARDROBE');
+      
+      // Extra details (家具 & 柱)
+      l[1][1] = t('COLUMN');
+      l[1][9] = t('COLUMN');
+      l[5][2] = t('SHELF');
     }),
 
     mansion_2f_right_room: createRoom('mansion_2f_right_room', '本館2F・右客室', { x: 9, y: 8 }, (l) => {
@@ -219,6 +283,13 @@ export const getClassicRooms = (): Record<string, RoomData> => {
       l[4][5] = t('KEY');                          // Handkerchief (ハンカチ) on floor
       l[4][5].itemId = 'ハンカチ';
       l[1][2] = t('WARDROBE');
+
+      // Pitfall trap (落とし穴) dropping to 1F Bathroom!
+      l[4][2] = t('HOLE', 'mansion_1f_bathroom');
+
+      // Elements (柱 & 家具)
+      l[1][9] = t('COLUMN');
+      l[7][2] = t('SHELF');
     }),
 
     mansion_2f_child_room: createRoom('mansion_2f_child_room', '本館2F・子供部屋', { x: 10, y: 5 }, (l) => {
@@ -226,6 +297,13 @@ export const getClassicRooms = (): Record<string, RoomData> => {
       l[4][3] = t('CHAIR');                        // Chair needing movement to shelf
       l[2][3] = t('SHELF');                        // High shelf containing Lighter Fluid
       l[1][8] = t('WARDROBE');
+
+      // Cluttered interior elements (家具 & 柱 & 落とし穴)
+      l[2][1] = t('COLUMN');
+      l[7][2] = t('SHELF');
+      
+      // Pitfall trap (落とし穴) dropping to 1F Library
+      l[7][5] = t('HOLE', 'mansion_1f_library');
     }),
 
     mansion_2f_piano_room: createRoom('mansion_2f_piano_room', '本館2F・ピアノ室', { x: 1, y: 5 }, (l) => {
@@ -233,36 +311,88 @@ export const getClassicRooms = (): Record<string, RoomData> => {
       l[4][5] = t('PIANO');                        // Blood stained piano keys
       l[1][9] = t('WARDROBE');                     // Move to reveal safe under it
       l[1][1] = t('STAIRS_UP', 'mansion_3f_bedroom'); // Secret floor drop coordinates
+      l[1][10] = t('COLUMN');
     }),
 
     mansion_3f_hall: createRoom('mansion_3f_hall', '本館3F・廊下', { x: 10, y: 2 }, (l) => {
       l[1][10] = t('STAIRS_DOWN', 'mansion_2f_hall');
       l[2][1] = t('DOOR', 'mansion_3f_bedroom');
       l[2][9] = t('DOOR', 'mansion_3f_end_room');
+
+      // Outer winding partition forming high-stakes maze bends and a dead end (y=7, x=8..10)
+      l[4][2] = t('WALL');
+      l[4][3] = t('WALL');
+      l[4][4] = t('WALL');
+      l[4][5] = t('WALL');
+      l[5][5] = t('WALL');
+      l[6][5] = t('WALL');
+      l[7][5] = t('WALL');
+
+      l[6][7] = t('WALL');
+      l[6][8] = t('WALL');
+      l[6][9] = t('WALL');
+      l[6][10] = t('WALL');
+
+      // Pillars (柱) & Drawers (家具)
+      l[3][2] = t('COLUMN');
+      l[7][7] = t('COLUMN');
+      l[8][2] = t('SHELF');
     }),
 
     mansion_3f_bedroom: createRoom('mansion_3f_bedroom', '本館3F・寝室', { x: 2, y: 8 }, (l) => {
       l[9][2] = t('DOOR', 'mansion_3f_hall');
       l[3][3] = t('BED');                          // Moveable bed on the left
       l[1][8] = t('WARDROBE');
+
+      // Extra scenery additions (家具 & 柱 & 落とし穴)
+      l[1][1] = t('COLUMN');
+      l[1][5] = t('SHELF');
+      
+      // Static pitfall hole (落とし穴) dropping to 2F Guest Bedroom!
+      l[7][8] = t('HOLE', 'mansion_2f_bedroom');
     }),
 
     mansion_3f_end_room: createRoom('mansion_3f_end_room', '本館3F・奥の部屋', { x: 9, y: 8 }, (l) => {
       l[9][9] = t('DOOR', 'mansion_3f_hall');
       l[5][5] = t('NPC');                          // Friends NPC (Takuro)
       l[1][5] = t('DOOR', 'mansion_3f_knob_trap'); // Locked handle door -> unscrew with driver for Door Knob!
+      l[1][1] = t('COLUMN');
+      l[1][10] = t('COLUMN');
+      l[3][2] = t('SHELF');
     }),
 
     mansion_bf_hall: createRoom('mansion_bf_hall', '本館B1F・廊下', { x: 9, y: 2 }, (l) => {
       l[1][9] = t('STAIRS_UP', 'mansion_1f_north_hall');
       l[5][0] = t('DOOR', 'mansion_bf_left');
       l[5][11] = t('DOOR', 'mansion_bf_right');
+
+      // rugged stone partitions forming winding loops and a dead end lock at (y=7..8, x=1..2)
+      l[3][3] = t('WALL');
+      l[3][4] = t('WALL');
+      l[3][5] = t('WALL');
+      l[4][5] = t('WALL');
+      l[5][5] = t('WALL');
+
+      l[6][3] = t('WALL');
+      l[7][3] = t('WALL');
+      l[8][3] = t('WALL');
+
+      // Medieval pillars (柱)
+      l[2][2] = t('COLUMN');
+      l[2][9] = t('COLUMN');
+      l[7][9] = t('COLUMN');
+
+      // Dungeon lockers (家具)
+      l[7][1] = t('SHELF');
     }),
 
     mansion_bf_left: createRoom('mansion_bf_left', '本館B1F・左の部屋', { x: 10, y: 5 }, (l) => {
       l[5][11] = t('DOOR', 'mansion_bf_hall');
       l[4][4] = t('CHAIR');                        // Move chair for Minus Screwdriver Bit
       l[2][8] = t('SHELF');                        // High cabinet holding Jail Key
+      
+      l[1][1] = t('COLUMN');
+      l[7][8] = t('SHELF');
     }),
 
     mansion_bf_right: createRoom('mansion_bf_right', '本館B1F・右の部屋', { x: 1, y: 5 }, (l) => {
@@ -271,12 +401,156 @@ export const getClassicRooms = (): Record<string, RoomData> => {
       l[5][11].requiredKey = '地下牢の鍵';
       l[1][4] = t('WARDROBE');                     // Wardrobe Left (need left-right sequence)
       l[1][7] = t('WARDROBE');                     // Wardrobe Right (need left-right sequence)
+      
+      l[1][1] = t('COLUMN');
+      l[7][2] = t('SHELF');
     }),
 
     mansion_bf_jail: createRoom('mansion_bf_jail', '本館B1F・地下牢', { x: 1, y: 5 }, (l) => {
       l[5][0] = t('DOOR', 'mansion_bf_right');
       l[4][5] = t('JAIL');                         // Cell bars
       l[1][5] = t('CANDLE');                       // Candle in dark cell space
+
+      l[1][2] = t('COLUMN');
+      l[1][9] = t('COLUMN');
+    }),
+
+    // --- CLASSIC ANNEX (別館) ROOMS ---
+    classic_annex_1f_entrance: createRoom('classic_annex_1f_entrance', '別館1F・玄関', { x: 5, y: 7 }, (l) => {
+      l[0][5] = t('DOOR', 'classic_annex_1f_corridor');
+      l[5][0] = t('DOOR', 'classic_annex_1f_left');
+      l[5][11] = t('DOOR', 'classic_annex_1f_drop_room');
+      l[1][1] = t('WARDROBE');
+      l[3][3] = t('COLUMN');
+      l[3][8] = t('COLUMN');
+      // Return door to mansion
+      l[9][5] = t('DOOR', 'mansion_1f_entrance');
+    }),
+
+    classic_annex_1f_corridor: createRoom('classic_annex_1f_corridor', '別館1F・廊下', { x: 5, y: 8 }, (l) => {
+      l[9][5] = t('DOOR', 'classic_annex_1f_entrance');
+      l[5][0] = t('DOOR', 'classic_annex_1f_doll_left');
+      l[5][11] = t('DOOR', 'classic_annex_1f_doll_right');
+      l[1][1] = t('STAIRS_UP', 'classic_annex_2f_corridor');
+      l[7][8] = t('WARDROBE');
+    }),
+
+    classic_annex_1f_left: createRoom('classic_annex_1f_left', '別館1F・左の部屋(暗室)', { x: 10, y: 5 }, (l) => {
+      l[5][11] = t('DOOR', 'classic_annex_1f_entrance');
+      l[9][5] = t('DOOR', 'classic_annex_1f_statue');
+      l[1][5] = t('CANDLE'); // Represent oil candle holder
+      l[4][5] = t('NPC');    // Takeshi
+    }),
+
+    classic_annex_1f_statue: createRoom('classic_annex_1f_statue', '別館1F・銅像破砕の間', { x: 5, y: 1 }, (l) => {
+      l[0][5] = t('DOOR', 'classic_annex_1f_left');
+      l[4][5] = t('DESK'); // Statue object
+    }),
+
+    classic_annex_1f_doll_left: createRoom('classic_annex_1f_doll_left', '別館1F・左の人形部屋', { x: 10, y: 5 }, (l) => {
+      l[5][11] = t('DOOR', 'classic_annex_1f_corridor');
+      l[4][3] = t('SHELF'); // Dolls pile
+      l[2][2] = t('PUZZLE'); // Headless doll puzzle / safe
+      l[3][2] = t('COLUMN');
+      l[7][9] = t('COLUMN');
+    }),
+
+    classic_annex_1f_doll_right: createRoom('classic_annex_1f_doll_right', '別館1F・右の人形部屋', { x: 1, y: 5 }, (l) => {
+      l[5][0] = t('DOOR', 'classic_annex_1f_corridor');
+      l[6][9] = t('SHELF'); // Defaced doll pile
+      l[2][8] = t('COLUMN');
+      l[7][2] = t('COLUMN');
+    }),
+
+    classic_annex_2f_corridor: createRoom('classic_annex_2f_corridor', '別館2F・廊下', { x: 1, y: 2 }, (l) => {
+      l[1][1] = t('STAIRS_DOWN', 'classic_annex_1f_corridor');
+      l[1][10] = t('STAIRS_UP', 'classic_annex_3f_corridor');
+      l[5][0] = t('DOOR', 'classic_annex_2f_left');
+      l[5][11] = t('DOOR', 'classic_annex_2f_right');
+    }),
+
+    classic_annex_2f_left: createRoom('classic_annex_2f_left', '別館2F・左の部屋', { x: 10, y: 5 }, (l) => {
+      l[5][11] = t('DOOR', 'classic_annex_2f_corridor');
+      l[3][5] = t('SHELF'); // Desktop desk lamp / stand containing Light Bulb
+    }),
+
+    classic_annex_2f_right: createRoom('classic_annex_2f_right', '別館2F・右の部屋', { x: 1, y: 5 }, (l) => {
+      l[5][0] = t('DOOR', 'classic_annex_2f_corridor');
+      l[1][5] = t('CANDLE'); // Fireplace representation
+      l[1][2] = t('WARDROBE');
+    }),
+
+    classic_annex_3f_corridor: createRoom('classic_annex_3f_corridor', '別館3F・廊下', { x: 10, y: 2 }, (l) => {
+      l[1][10] = t('STAIRS_DOWN', 'classic_annex_2f_corridor');
+      l[5][0] = t('DOOR', 'classic_annex_3f_left');
+      l[5][11] = t('DOOR', 'classic_annex_3f_right');
+    }),
+
+    classic_annex_3f_left: createRoom('classic_annex_3f_left', '別館3F・左下の部屋', { x: 10, y: 5 }, (l) => {
+      l[5][11] = t('DOOR', 'classic_annex_3f_corridor');
+      l[1][5] = t('WALL_SECRET'); // Wall wallpaper section peeling to reveal 290
+    }),
+
+    classic_annex_3f_right: createRoom('classic_annex_3f_right', '別館3F・右下の部屋', { x: 1, y: 5 }, (l) => {
+      l[5][0] = t('DOOR', 'classic_annex_3f_corridor');
+      l[4][5] = t('CHAIR'); // Box pushing
+      l[4][8] = t('PLATE'); // Recess tile to lock box
+    }),
+
+    classic_annex_1f_drop_room: createRoom('classic_annex_1f_drop_room', '別館1F・右の部屋', { x: 1, y: 5 }, (l) => {
+      l[5][0] = t('DOOR', 'classic_annex_1f_entrance');
+      l[5][5] = t('HOLE', 'classic_annex_bf_corridor'); // Drops to B1 corridor
+    }),
+
+    classic_annex_bf_corridor: createRoom('classic_annex_bf_corridor', '別館B1F・廊下', { x: 5, y: 7 }, (l) => {
+      l[2][5] = t('DOOR', 'classic_annex_bf_dark');
+      l[2][5].requiredKey = '地下室の鍵';
+      l[5][0] = t('DOOR', 'classic_annex_bf_bath');
+      l[7][8] = t('WARDROBE');
+    }),
+
+    classic_annex_bf_dark: createRoom('classic_annex_bf_dark', '別館B1F・地下暗室', { x: 5, y: 8 }, (l) => {
+      l[9][5] = t('DOOR', 'classic_annex_bf_corridor');
+      l[5][0] = t('DOOR', 'classic_annex_bf_breaker');
+      l[5][11] = t('DOOR', 'classic_annex_bf_pwd_door');
+    }),
+
+    classic_annex_bf_breaker: createRoom('classic_annex_bf_breaker', '別館B1F・ブレーカー室', { x: 10, y: 5 }, (l) => {
+      l[5][11] = t('DOOR', 'classic_annex_bf_dark');
+      l[4][5] = t('CHAIR'); // Breaker electrical wood blocking board
+      l[1][5] = t('SHELF'); // Bookcase containing Picture Book
+    }),
+
+    classic_annex_bf_pwd_door: createRoom('classic_annex_bf_pwd_door', '別館B1F・暗号ドア室', { x: 1, y: 5 }, (l) => {
+      l[5][0] = t('DOOR', 'classic_annex_bf_dark');
+      l[1][5] = t('DOOR', 'classic_annex_bf_inner'); // Password locked door 1237
+      l[1][5].requiredKey = 'しおり配列ロック';
+      l[1][4] = t('SAFE'); // Control plate screw cover
+    }),
+
+    classic_annex_bf_inner: createRoom('classic_annex_bf_inner', '別館B1F・奥の部屋(卓郎屋)', { x: 5, y: 8 }, (l) => {
+      l[9][5] = t('DOOR', 'classic_annex_bf_pwd_door');
+      l[5][11] = t('DOOR', 'classic_annex_bf_middle');
+      l[1][5] = t('WARDROBE'); // Wardrobe containing Takuro
+    }),
+
+    classic_annex_bf_middle: createRoom('classic_annex_bf_middle', '別館B1F・真ん中の部屋', { x: 1, y: 5 }, (l) => {
+      l[5][0] = t('DOOR', 'classic_annex_bf_inner');
+      l[5][5] = t('PLATE'); // Warped carpet
+    }),
+
+    classic_annex_bf_bath: createRoom('classic_annex_bf_bath', '別館B1F・浴槽室', { x: 5, y: 8 }, (l) => {
+      l[9][5] = t('DOOR', 'classic_annex_bf_corridor');
+      l[1][5] = t('WALL_SECRET'); // Shower curtains
+      l[2][5] = t('BATHTUB');     // Bath basin containing Red Key / sliding
+    }),
+
+    classic_annex_bf_cell: createRoom('classic_annex_bf_cell', '別館B1F・格子戸の間', { x: 5, y: 8 }, (l) => {
+      l[4][5] = t('JAIL'); // Rusted grid lock
+      l[2][5] = t('KEY');  // Holds Cell exit Key inside target
+      l[2][5].itemId = '格子戸の鍵';
+      l[1][9] = t('EXIT'); // Final gate
+      l[1][9].requiredKey = '格子戸の鍵';
     })
   };
   return rooms;

@@ -53,6 +53,10 @@ export const Tile: React.FC<TileProps> = ({ type, isHighlighted }) => {
         return "bg-slate-950 border-x-4 border-slate-800";
       case 'NPC':
         return "bg-slate-900 border-2 border-indigo-900";
+      case 'COLUMN':
+        return "bg-gradient-to-b from-stone-600 to-stone-850 border-x-4 border-t-2 border-b-4 border-stone-900 shadow-lg relative";
+      case 'HOLE':
+        return "bg-black border-2 border-slate-950 shadow-[inset_0_0_15px_black] flex items-center justify-center";
       default:
         return "bg-slate-900";
     }
@@ -79,6 +83,19 @@ export const Tile: React.FC<TileProps> = ({ type, isHighlighted }) => {
       {type === 'CANDLE' && <Flame className="text-red-500 animate-bounce" size={20} />}
       {type === 'JAIL' && <LockOpen className="text-slate-400" size={20} />}
       {type === 'NPC' && <Smile className="text-indigo-400" size={22} />}
+      {type === 'COLUMN' && (
+        <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-4 bg-stone-700/50 border-x border-stone-850 flex flex-col justify-around py-1">
+          <div className="h-0.5 w-full bg-stone-900/30" />
+          <div className="h-0.5 w-full bg-stone-900/30" />
+          <div className="h-0.5 w-full bg-stone-900/30" />
+        </div>
+      )}
+      {type === 'HOLE' && (
+        <div className="w-9 h-9 rounded-full bg-neutral-980 border border-red-950/50 relative overflow-hidden flex items-center justify-center shadow-[inset_0_0_12px_rgba(0,0,0,1)]">
+          <div className="absolute inset-0.5 rounded-full bg-gradient-radial from-transparent to-red-950/20" />
+          <div className="w-4 h-4 rounded-full bg-black opacity-80 border border-neutral-900" />
+        </div>
+      )}
       
       {/* Texture noise */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 

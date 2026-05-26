@@ -1,5 +1,5 @@
 
-export type TileType = 'FLOOR' | 'WALL' | 'DOOR' | 'WARDROBE' | 'KEY' | 'PUZZLE' | 'EXIT' | 'STAIRS_UP' | 'STAIRS_DOWN' | 'PLATE' | 'CHAIR' | 'DESK' | 'BATHTUB' | 'SHELF' | 'BED' | 'PIANO' | 'SAFE' | 'WALL_SECRET' | 'CANDLE' | 'JAIL' | 'NPC';
+export type TileType = 'FLOOR' | 'WALL' | 'DOOR' | 'WARDROBE' | 'KEY' | 'PUZZLE' | 'EXIT' | 'STAIRS_UP' | 'STAIRS_DOWN' | 'PLATE' | 'CHAIR' | 'DESK' | 'BATHTUB' | 'SHELF' | 'BED' | 'PIANO' | 'SAFE' | 'WALL_SECRET' | 'CANDLE' | 'JAIL' | 'NPC' | 'HOLE' | 'COLUMN';
 
 export interface Tile {
   type: TileType;
@@ -32,7 +32,7 @@ export interface GameState {
   moveCount: number;
   isLocked: boolean; // UI lock during transitions
   friendsSaved: number;
-  gameMode: 'CLASSIC' | 'RANDOM';
+  gameMode: 'CLASSIC' | 'RANDOM' | 'ONI_POV';
   eventFlags?: Record<string, boolean>; // Persistent event triggers
   oniType?: 'NORMAL' | 'FUWATTY' | 'BLOCK' | 'GIANT';
   oniSpeech?: string;
@@ -41,6 +41,20 @@ export interface GameState {
     oniType: 'NORMAL' | 'FUWATTY' | 'BLOCK' | 'GIANT';
     targetRoom: string;
   } | null;
+  oniPovTargets?: {
+    id: string;
+    name: string;
+    pos: Position;
+    room: string;
+    isCaught: boolean;
+    isHiding: boolean;
+    hidingTileX?: number;
+    hidingTileY?: number;
+    type: 'HIROSHI' | 'TAKURO' | 'TAKESHI' | 'MIKA';
+    alertTimer?: number;
+  }[];
+  oniPovTimeLeft?: number;
+  oniPovLogs?: string[];
 }
 
 export const TILE_SIZE = 48;

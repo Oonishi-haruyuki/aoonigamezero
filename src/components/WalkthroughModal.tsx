@@ -73,8 +73,38 @@ export const WalkthroughModal: React.FC<WalkthroughModalProps> = ({ isOpen, onCl
     },
     {
       id: 10,
-      label: 'エントランスから外へ脱出する',
-      description: '手に入れた「別館の鍵」を使用し、エントランスの大扉を開錠。外の森へと生還します！',
+      label: '別館（別館1Fエントランス）への進入',
+      description: '手に入れた「別館の鍵」を使用し、エントランスの大扉を開錠。すると、不気味な第一別館へと進行します！',
+      isCompleted: state.currentRoom.startsWith('classic_annex_') || state.status === 'WIN',
+    },
+    {
+      id: 11,
+      label: '暖炉から「赤い石」を回収 ＆ ライターオイル獲得',
+      description: '別館1F右室で「人形」を暖炉の炎に投げ込み「赤い石」を回収、3F右室の木箱（椅子）を押し動かして隠された「ライターオイル」を確保します。',
+      isCompleted: hasItem('赤い石') || state.eventFlags?.annexDollsDone === true || state.status === 'WIN',
+    },
+    {
+      id: 12,
+      label: '人形台座パズル ＆ 金庫解錠',
+      description: '1F下部の石像を落として砕き「青い石」を入手。２つの宝石を人形のソケットにはめて「人形の頭」を獲得し、左室の人形台座に頭を差し当て、コード「290」で金庫を開けて「地下室の鍵」を入手します。',
+      isCompleted: hasItem('地下室の鍵') || state.eventFlags?.classic_annex_1f_doll_left_safe_unlocked === true || state.status === 'WIN',
+    },
+    {
+      id: 13,
+      label: '地下主ブレーカーの再起動 ＆ バスタブ排水',
+      description: '2F左室の電気スタンドから「電球」を回収し、B1Fブレーカー室の切れた電球をソケット交換。「ライター」で導線紙を燃やしてスイッチを入れ電力を復旧、B1F浴室を排水して「赤い鍵」を入手し浴槽を押し動かして地下水路へ進みます。',
+      isCompleted: hasItem('赤い鍵') || state.eventFlags?.annexBathPushed === true || state.status === 'WIN',
+    },
+    {
+      id: 14,
+      label: '卓郎との再会 ＆ 錆びた鉄格子の解錠',
+      description: 'B1F奥室のクローゼットにひっそりと潜む卓郎を調べ話しかけ、金属錆落とし用の「酢」を譲り受けます。「酢」で鉄格子の泥錆汚れを溶解し、「赤い鍵」を使って開け、奥から「格子戸の鍵」を獲得します。',
+      isCompleted: hasItem('格子戸の鍵') || state.status === 'WIN',
+    },
+    {
+      id: 15,
+      label: 'セキュリティテンキーハッチの解錠 ＆ 完全生還',
+      description: 'B1Fパスワード室で「精密ドライバー」を使ってカバーを外し、空いたスリットに「しおり」を差し込んで得られた暗号コード「1237」をテンキー送信しロックを解除。「格子戸の鍵」で大ハッチを開け、完全生還を果たします！',
       isCompleted: state.status === 'WIN',
     }
   ];

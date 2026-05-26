@@ -7,9 +7,10 @@ interface CharacterProps {
   isActive?: boolean;
   oniType?: 'NORMAL' | 'FUWATTY' | 'BLOCK' | 'GIANT';
   speech?: string;
+  humanType?: 'HIROSHI' | 'TAKURO' | 'TAKESHI' | 'MIKA';
 }
 
-export const Character: React.FC<CharacterProps> = ({ type, isHiding, isActive, oniType = 'NORMAL', speech }) => {
+export const Character: React.FC<CharacterProps> = ({ type, isHiding, isActive, oniType = 'NORMAL', speech, humanType }) => {
   if (isHiding && type === 'PLAYER') return null;
 
   const isPlayer = type === 'PLAYER';
@@ -176,10 +177,71 @@ export const Character: React.FC<CharacterProps> = ({ type, isHiding, isActive, 
     );
   }
 
+  // Determine skin details based on humanType
+  const getHumanDetails = () => {
+    switch (humanType) {
+      case 'HIROSHI':
+        return {
+          name: 'ひろし',
+          jacketColor: 'bg-blue-600 border-blue-400',
+          hairColor: 'bg-stone-600',
+          headStyle: 'rounded-t-lg',
+          hairDetail: <div className="absolute -top-1 left-0 right-0 h-2 bg-stone-700 rounded-t-md" />
+        };
+      case 'TAKURO':
+        return {
+          name: 'たくろう',
+          jacketColor: 'bg-emerald-600 border-emerald-400',
+          hairColor: 'bg-amber-800',
+          headStyle: 'rounded-t-xl',
+          hairDetail: (
+            <div className="absolute -top-1 left-0 right-0 h-2.5 flex justify-between">
+              <div className="w-1.5 h-2 bg-amber-800 rounded-tl-md -rotate-12" />
+              <div className="w-4 h-2 bg-amber-800 rounded-t-sm" />
+              <div className="w-1.5 h-2 bg-amber-800 rounded-tr-md rotate-12" />
+            </div>
+          )
+        };
+      case 'TAKESHI':
+        return {
+          name: 'たけし',
+          jacketColor: 'bg-cyan-600 border-cyan-400',
+          hairColor: 'bg-yellow-600',
+          headStyle: 'rounded-t-[40%_40%_0_0]',
+          hairDetail: <div className="absolute -top-1 left-1 right-1 h-3 bg-yellow-500 rounded-tl-lg" />
+        };
+      case 'MIKA':
+        return {
+          name: 'みか',
+          jacketColor: 'bg-rose-500 border-rose-300',
+          hairColor: 'bg-amber-600',
+          headStyle: 'rounded-t-2xl',
+          hairDetail: (
+            <>
+              <div className="absolute -top-1.5 left-0.5 right-0.5 h-2 bg-amber-600 rounded-t-lg" />
+              {/* Twin tails */}
+              <div className="absolute -left-1 top-2 w-2 h-3.5 bg-amber-600 rounded-l-full border-l border-amber-800" />
+              <div className="absolute -right-1 top-2 w-2 h-3.5 bg-amber-600 rounded-r-full border-r border-amber-800" />
+            </>
+          )
+        };
+      default:
+        return {
+          name: 'ひろし',
+          jacketColor: 'bg-blue-600 border-blue-400',
+          hairColor: 'bg-stone-600',
+          headStyle: 'rounded-t-lg',
+          hairDetail: <div className="absolute -top-1 left-0 right-0 h-2 bg-stone-700 rounded-t-md" />
+        };
+    }
+  };
+
+  const human = getHumanDetails();
+
   return (
     <motion.div
       layoutId={type}
-      className={`relative flex items-center justify-center`}
+      className={`relative flex items-center justify-center ${humanType === 'TAKESHI' ? 'animate-[shake_0.15s_infinite_alternate]' : ''}`}
       style={{ width: 40, height: 40 }}
       initial={false}
       animate={{
@@ -190,24 +252,42 @@ export const Character: React.FC<CharacterProps> = ({ type, isHiding, isActive, 
         repeat: type === 'AO_ONI' ? Infinity : 0,
       }}
     >
+      {/* Name tag */}
+      <div className="absolute -top-4 px-1 rounded bg-slate-900/95 border border-slate-800 text-[8px] font-mono leading-none py-0.5 text-slate-350 shadow-md whitespace-nowrap z-30 select-none scale-90 pointer-events-none">
+        {human.name}
+      </div>
+
+      {speech && (
+        <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-950 text-blue-400 border border-blue-900/80 px-2 py-0.5 rounded text-[9px] font-bold font-mono tracking-wider shadow-[0_0_10px_rgba(59,130,246,0.3)] whitespace-nowrap z-[120] animate-bounce">
+          {speech}
+          <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-slate-950 border-r border-b border-blue-900/80 rotate-45" />
+        </div>
+      )}
+
       {/* Body */}
       <div 
-        className={`w-full h-full rounded-md shadow-lg border-2 ${
-          isPlayer ? 'bg-blue-600 border-blue-400' : 'bg-indigo-900 border-indigo-700'
+        className={`w-full h-full rounded-md shadow-lg border-2 flex flex-col justify-end relative overflow-hidden ${
+          isPlayer ? human.jacketColor : 'bg-indigo-900 border-indigo-700'
         }`}
-        id={isPlayer ? "hiroshi-body" : "ao-oni-body"}
+        id={isPlayer ? `${human.name}-body` : "ao-oni-body"}
       >
-        {/* Face */}
-        <div className="flex flex-col items-center justify-center mt-1 space-y-2">
-          {/* Eyes */}
-          <div className="flex space-x-3">
-             <div className={`w-2 h-2 rounded-full ${isPlayer ? 'bg-white' : 'bg-white animate-pulse shadow-[0_0_8px_white]'}`} />
-             <div className={`w-2 h-2 rounded-full ${isPlayer ? 'bg-white' : 'bg-white animate-pulse shadow-[0_0_8px_white]'}`} />
+        {/* Head containing hair */}
+        <div className={`absolute top-0 inset-x-0 h-5 bg-orange-100 ${human.headStyle}`}>
+          {human.hairDetail}
+          {/* Eyes inside head */}
+          <div className="absolute top-2 w-full flex justify-around px-2">
+            <div className={`w-1 h-1 rounded-full ${humanType === 'TAKESHI' ? 'bg-red-650' : 'bg-black'}`} />
+            <div className={`w-1 h-1 rounded-full ${humanType === 'TAKESHI' ? 'bg-red-650' : 'bg-black'}`} />
           </div>
-          {/* Mouth/Detail */}
-          {!isPlayer && (
-             <div className="w-4 h-1 bg-black rounded-full opacity-50" />
-          )}
+          {/* Mouth */}
+          <div className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 h-0.5 rounded-full bg-neutral-900 ${
+            humanType === 'TAKESHI' ? 'w-2 h-1 bg-neutral-950 border border-neutral-700/50' : 'w-1.5'
+          }`} />
+        </div>
+
+        {/* Shirt Collar / Outerwear accent */}
+        <div className="w-full h-4 relative flex justify-center">
+          <div className="w-2 h-1 bg-orange-100 rounded-b-sm border-x border-slate-900/20" />
         </div>
       </div>
       
