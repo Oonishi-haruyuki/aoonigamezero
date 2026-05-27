@@ -37,6 +37,24 @@ export const HUD: React.FC<HUDProps> = ({ state, onSave, onLoad, onToggleWalkthr
       <div className="space-y-4 pt-4 border-t border-slate-900">
         {state.gameMode === 'ONI_POV' ? (
           <>
+            {/* Coordinated Attack Connection display */}
+            <div className="space-y-1 pb-2 border-b border-slate-900/40">
+              <h2 className="text-xs font-mono uppercase tracking-widest text-slate-500 font-bold">Coordinated Status</h2>
+              <div className={`p-2 rounded border flex items-center justify-between text-xs min-h-[36px] ${
+                state.status === 'CHASE' 
+                  ? 'bg-rose-950/40 border-rose-500/50 text-rose-300 shadow-[0_0_12px_rgba(244,63,94,0.3)]' 
+                  : 'bg-indigo-950/20 border-indigo-900/40 text-indigo-400'
+              }`}>
+                <span className="font-bold flex items-center gap-1.5">
+                  <span className={`w-2 h-2 rounded-full ${state.status === 'CHASE' ? 'bg-rose-500' : 'bg-indigo-500'}`} />
+                  {state.status === 'CHASE' ? '挟み撃ち作戦中！' : '索敵散策中'}
+                </span>
+                <span className="text-[10px] font-mono tracking-wide">
+                  {state.status === 'CHASE' ? '2鬼1人' : '単独'}
+                </span>
+              </div>
+            </div>
+
             {/* Hunt Targets list inside ONI_POV */}
             <div className="space-y-1">
               <h2 className="text-xs font-mono uppercase tracking-widest text-slate-500 font-bold">Hunt Targets</h2>

@@ -55,6 +55,13 @@ export interface GameState {
   }[];
   oniPovTimeLeft?: number;
   oniPovLogs?: string[];
+  oniPovFootsteps?: {
+    x: number;
+    y: number;
+    room: string;
+    timeLeft: number;
+  }[];
+  oniPovActiveTargetId?: string | null;
 }
 
 export const TILE_SIZE = 48;

@@ -223,6 +223,8 @@ export default function App() {
             type: 'TAKESHI'
           }
         ],
+        oniPovFootsteps: [],
+        oniPovActiveTargetId: null,
         eventFlags: {}
       });
     }
@@ -286,6 +288,10 @@ export default function App() {
     };
 
     if (tile.type === 'KEY') {
+      if (room.id === 'classic_annex_2_bf_jail_corridor' && !state.eventFlags?.annex2StudyKeyGet) {
+        setState(prev => ({ ...prev, message: '鉄格子の仕切りがあるため、奥の鍵へ手を伸ばすことはできない。' }));
+        return false;
+      }
       const keyName = tile.itemId || '銀の鍵';
       setState(prev => {
         const afterGet = [...prev.inventory, keyName];
@@ -311,7 +317,91 @@ export default function App() {
       return true;
     }
 
+    if (tile.type === 'JAIL') {
+      if (room.id === 'classic_annex_2_bf_jail_corridor') {
+        if (state.inventory.includes('書斎の鍵') || state.eventFlags?.annex2StudyKeyGet) {
+          setState(prev => ({ ...prev, message: '鉄格子。奥の鍵はすでに回収済みだ。' }));
+          return true;
+        }
+        if (state.inventory.includes('金属の棒')) {
+          setRooms(prevRooms => {
+            const newRooms = { ...prevRooms };
+            const newRoom = { ...rooms['classic_annex_2_bf_jail_corridor'] };
+            newRoom.layout = [...newRoom.layout];
+            newRoom.layout[1] = [...newRoom.layout[1]];
+            newRoom.layout[1][1] = { type: 'FLOOR' };
+            newRooms[newRoom.id] = newRoom;
+            return newRooms;
+          });
+          setState(prev => ({
+            ...prev,
+            inventory: prev.inventory.filter(i => i !== '金属の棒').concat('書斎の鍵'),
+            eventFlags: { ...prev.eventFlags, annex2StudyKeyGet: true },
+            message: '持っている『金属の棒』を格子の隙間からめいっぱい伸ばし、奥の地面に置かれている【書斎の鍵】を器用に引っ掛け、手前に引き寄せて獲得した！'
+          }));
+        } else {
+          setState(prev => ({
+            ...prev,
+            message: '頑丈な鉄格子の仕切り。格子の数メートル先の床の上に、光輝く【書斎の鍵】がぽつんと置かれているのが見える……。しかし鉄柵を通り抜けることはできず、手を伸ばしても到底届かない。何か細長くて頑強な「棒」のようなもので引き寄せられないだろうか……。'
+          }));
+        }
+        return true;
+      }
+      if (room.id === 'classic_annex_2_bf_big_jail') {
+        if (state.eventFlags?.annex2BigJailOniBreakout) {
+          if (!state.eventFlags?.annex2SecondPieceGet) {
+            setState(prev => ({
+              ...prev,
+              inventory: [...prev.inventory, '青いピース'],
+              eventFlags: { ...prev.eventFlags, annex2SecondPieceGet: true },
+              message: 'ひしゃげた鉄格子の奥、泥汚れした牢屋の隅にサファイア色の【青いピース】（2点目）が落ちていた！ 慎重に拾い上げて獲得した！'
+            }));
+          } else {
+            setState(prev => ({ ...prev, message: '青鬼たちが暴れ回って破壊し尽くした檻の残骸だ。もはや人影はない。' }));
+          }
+        } else {
+          setState(prev => ({ ...prev, message: '巨大な地下牢。暗闇の奥から、無数の巨大な青い瞳（青鬼たち）がこちらをジッと凝視している……！背筋が凍るような気配。近づかない方が良さそうだ。' }));
+        }
+        return true;
+      }
+    }
+
     if (tile.type === 'PLATE') {
+      if (room.id === 'classic_annex_1f_doll_right') {
+        const isSwitchedOff = !state.eventFlags?.annexDollLightSwitchedOff;
+        setState(prev => ({
+          ...prev,
+          eventFlags: { ...prev.eventFlags, annexDollLightSwitchedOff: isSwitchedOff },
+          message: isSwitchedOff
+            ? (prev.eventFlags?.annexDollBulbPlaced
+              ? '壁の点滅スイッチをパチンと押し、部屋の主要照明を消灯した！ すると、窓から差し込む満月の月光が、首に固定した『電球フランス人形』を背後から激しく透過させ、反対側の漆喰壁にクッキリと不思議な影数字「赤黄青のボタン：１２２３２１」を映し出した！ これが暗号ドアの解だ！'
+              : '部屋の照明スイッチをオフにし消灯した。室内は真っ暗になったが、フランス人形の頭部がないままだと月光は透過せず、単に暗くなっただけだった……。首に電球さえあれば……。')
+            : '部屋の天井スイッチをオンにし、明るい照明を再び点灯させた！'
+        }));
+        return true;
+      }
+
+      if (room.id === 'classic_annex_2_2f_study') {
+        if (state.eventFlags?.annex2StudyPlateRemoved) {
+          setState(prev => ({ ...prev, message: '壁のネジ板プレートはすでに外されている。奥の配線口は空っぽだ。' }));
+          return true;
+        }
+        if (state.inventory.includes('精密ドライバー')) {
+          setState(prev => ({
+            ...prev,
+            inventory: [...prev.inventory, '裏口の鍵'],
+            eventFlags: { ...prev.eventFlags, annex2StudyPlateRemoved: true },
+            message: '壁板のスパイラルネジ。獲得した『精密ドライバー』を慎重にあてがって回すと、スルスルと４つのマイナス細ネジが外れた！ 金属プレートを取り外した奥から、銀色に光る【裏口の鍵】を獲得した！'
+          }));
+        } else {
+          setState(prev => ({
+            ...prev,
+            message: '壁に小さな金属カバープレートが４箇所ネジ止めされている。このスリットネジは非常に精密かつ細いため、専用 of 『精密ドライバー』がなければ緩めることはできない。'
+          }));
+        }
+        return true;
+      }
+
       if (room.id === 'classic_annex_bf_middle') {
         if (state.inventory.includes('円盤')) {
           setState(prev => ({ ...prev, message: 'めくられたペルシャカーペットの跡だ。' }));
@@ -485,6 +575,35 @@ export default function App() {
         }
       }
 
+      if (room.id === 'classic_annex_2_2f_study') {
+        if (state.eventFlags?.annex2StudyChairPushed) {
+          setState(prev => ({ ...prev, message: '丸型椅子は本棚の金庫の真下にセットされている。' }));
+          return true;
+        }
+        const targetX = 5;
+        const targetY = 2; // right below active shelf at 1, 5
+        if (room.layout[targetY][targetX].type === 'FLOOR') {
+          setRooms(prevRooms => {
+            const newRooms = { ...prevRooms };
+            const newRoom = { ...room };
+            newRoom.layout = [...room.layout];
+            newRoom.layout[pos.y] = [...room.layout[pos.y]];
+            newRoom.layout[targetY] = [...room.layout[targetY]];
+            newRoom.layout[targetY][targetX] = { ...tile };
+            newRoom.layout[pos.y][pos.x] = { type: 'FLOOR', id: Math.random().toString(36).substr(2, 9) };
+            newRooms[newRoom.id] = newRoom;
+            return newRooms;
+          });
+          setState(prev => ({
+            ...prev,
+            eventFlags: { ...prev.eventFlags, annex2StudyChairPushed: true },
+            message: '置いてあった丸型の木椅子を力を込めて上に引きずり、本棚の電子金庫の真下（踏み台）へと設置した！ これで金庫を操作できるぞ！',
+            moveCount: prev.moveCount + 1
+          }));
+          return true;
+        }
+      }
+
       if (room.id === 'classic_annex_3f_right') {
         if (state.eventFlags?.annexBoxMoved) {
           setState(prev => ({ ...prev, message: '木箱はしっかりと床のくぼみに噛み合っている。' }));
@@ -544,6 +663,21 @@ export default function App() {
     }
 
     if (tile.type === 'DESK') {
+      if (room.id === 'classic_annex_2_2f_closet_hiding_room') {
+        if (state.inventory.includes('サイコロ') || state.eventFlags?.annex2DiceGet) {
+          setState(prev => ({ ...prev, message: 'ほこりっぽい勉強机だ。引き出しはすべて引き抜かれ、中は空っぽだ。' }));
+          return true;
+        }
+        setState(prev => ({
+          ...prev,
+          inventory: [...prev.inventory, 'サイコロ', '青いピース'],
+          eventFlags: { ...prev.eventFlags, annex2DiceGet: true },
+          message: '古ぼけた木製の学習机。引き出しの奥側を指先で探ってみると、角柱状のウッドダイス【サイコロ】と、サファイア色に光輝く円盤【青いピース】（3点目）を発見し、手に入れた！',
+          moveCount: prev.moveCount + 1
+        }));
+        return true;
+      }
+
       if (room.id === 'classic_annex_1f_statue') {
         if (state.eventFlags?.annexStatueBroken) {
           setState(prev => ({ ...prev, message: '砕け散った大理石の破片が床に散らばっている。' }));
@@ -672,6 +806,29 @@ export default function App() {
     }
 
     if (tile.type === 'SHELF') {
+      if (room.id === 'classic_annex_bf_pwd_door') {
+        if (state.eventFlags?.annexBfShelfSlid) {
+          setState(prev => ({ ...prev, message: 'スライドさせた重い本棚の裏から、ひび割れた床「落とし穴」が露わになっている。' }));
+          return true;
+        }
+        setRooms(prevRooms => {
+          const newRooms = { ...prevRooms };
+          const newRoom = { ...rooms['classic_annex_bf_pwd_door'] };
+          newRoom.layout = [...newRoom.layout];
+          newRoom.layout[7] = [...newRoom.layout[7]];
+          newRoom.layout[7][9] = { type: 'HOLE' };
+          newRoom.layout[7][10] = { type: 'SHELF' };
+          newRooms[newRoom.id] = newRoom;
+          return newRooms;
+        });
+        setState(prev => ({
+          ...prev,
+          eventFlags: { ...prev.eventFlags, annexBfShelfSlid: true },
+          message: '古く重い大型本棚の端を渾身の力で右側にグッと引くと、ゴロゴロと床を擦る摩擦音とともにスライドできた！ 隠されていた本棚の真下の床板には、地下方向へぽつりと口を開けた危険な『落とし穴 (HOLE)』が出現した！'
+        }));
+        return true;
+      }
+
       if (room.id === 'mansion_1f_washroom') {
         if (state.inventory.includes('洗剤') || state.inventory.includes('洗剤の付いたハンカチ')) {
           setState(prev => ({ ...prev, message: '掃除用品が綺麗に並ぶ洗面台の棚だ。' }));
@@ -760,8 +917,27 @@ export default function App() {
         return true;
       }
       else if (room.id === 'classic_annex_1f_doll_right') {
-        if (state.inventory.includes('人形の頭') || state.eventFlags?.annexDollsDone) {
-          setState(prev => ({ ...prev, message: '首の抜けたフランス人形が床に転がっている。' }));
+        if (state.eventFlags?.annexDollsDone) {
+          if (!state.eventFlags?.annexDollBulbPlaced) {
+            if (state.inventory.includes('電球')) {
+              setState(prev => ({
+                ...prev,
+                inventory: prev.inventory.filter(i => i !== '電球'),
+                eventFlags: { ...prev.eventFlags, annexDollBulbPlaced: true },
+                message: '首の抜けた不気味なフランス人形。空いた首のネジ窪みに、2F電気スタンドからはずしてきた『電球』をきつく差し込んで固定した！'
+              }));
+            } else {
+              setState(prev => ({
+                ...prev,
+                message: '首の抜けたフランス人形が床に転がっている。首の凹みソケット部に、ジャストサイズではまる丸型の『電球』があれば固定できそうだ。'
+              }));
+            }
+          } else {
+            setState(prev => ({
+              ...prev,
+              message: '電球が頭部の代わりに差し込まれた首なしフランス人形だ。部屋の電気（ドア横のスイッチ）を消して、月光の力を借りれば、さらなる変化が楽しめそう。'
+            }));
+          }
           return true;
         }
         if (state.inventory.includes('青い石') && state.inventory.includes('赤い石')) {
@@ -778,6 +954,32 @@ export default function App() {
             message: '無数の壊れたフランス人形がひしめき合っている。一体の顔面を見ると、両目のソケット穴が虚空を穿っている。対となる、青と赤の美しい宝石（石像と暖炉に隠されているはず）をはめれば、首パーツが手に入りそうだ。'
           }));
         }
+        return true;
+      }
+      else if (room.id === 'classic_annex_2_2f_study') {
+        if (state.eventFlags?.classic_annex_2_2f_study_safe_unlocked) {
+          setState(prev => ({ ...prev, message: '本棚の上の金庫はすでに空っぽで開いている。' }));
+          return true;
+        }
+        if (!state.eventFlags?.annex2StudyChairPushed) {
+          setState(prev => ({
+            ...prev,
+            message: '本棚の最上段の陰に、頑健なスチール金庫が見える。だが、高すぎて背伸びしても指先さえ届かない。何か踏み台になる「椅子」のようなものを引きずってくれば届きそうだ。'
+          }));
+          return true;
+        }
+        
+        setActiveSafe({
+          roomId: room.id,
+          code: '3045',
+          rewardItem: '別館2の地下室の鍵',
+          title: '本棚の上のセキュリティ金庫'
+        });
+        setSafeInputCode('');
+        setState(prev => ({
+          ...prev,
+          message: '踏み立てた丸椅子の上に乗り、電子金庫の液晶キーに触れた！ ４桁のセキュリティ暗証コードを入力してください。（ヒント：BF寝室の各4枚のベッドカーテンの図形頂点数）'
+        }));
         return true;
       }
       else if (room.id === 'classic_annex_2f_left') {
@@ -978,6 +1180,88 @@ export default function App() {
     }
 
     if (tile.type === 'PUZZLE') {
+      if (room.id === 'classic_annex_bf_cell') {
+        if (state.inventory.includes('金属の棒') || state.eventFlags?.classic_annex_bf_cell_safe_unlocked) {
+          setState(prev => ({ ...prev, message: '色のボタン盤から「金属の棒」はすでに回収され、仕掛けは解かれている。' }));
+          return true;
+        }
+        setActiveSafe({
+          roomId: room.id,
+          code: '122321',
+          rewardItem: '金属の棒',
+          title: '色の３色ボタン盤（赤=1, 黄=2, 青=3）'
+        });
+        setSafeInputCode('');
+        setState(prev => ({
+          ...prev,
+          message: '壁画に赤(1)、黄(2)、青(3)のボタンスイッチが並んでいる。メニューアイテムから「円盤」の色パターン（赤→黄→黄→青→黄→赤）を確認し、正しい順で6桁の数値を入力してください。'
+        }));
+        return true;
+      }
+
+      if (room.id === 'classic_annex_2_1f_dice_pic_room') {
+        if (state.eventFlags?.annexDicePlaced) {
+          setState(prev => ({ ...prev, message: '絵画の中央にくさび形のサイコロがはめ込まれている。【いす引きの法則：1=左上、2=右上、3=右下、4=左下。押し引き順は【3241】である】と怪しいメッセージが浮かび上がっている。' }));
+          return true;
+        }
+        if (state.inventory.includes('サイコロ')) {
+          setState(prev => ({
+            ...prev,
+            inventory: prev.inventory.filter(i => i !== 'サイコロ'),
+            eventFlags: { ...prev.eventFlags, annexDicePlaced: true },
+            message: '額の中央の四角い窪みに【サイコロ】をはめ込んだ！ すると、カチリと音がして額の裏からダイス配列に対応するメッセージが浮かび上がった！ 「いす引きの法則：1=左上、2=右上、3=右下、4=左下。順に引きボタンを押せ：【３２４１】」'
+          }));
+        } else {
+          setState(prev => ({ ...prev, message: 'サイコロの絵が描かれた額縁だ。中央部分にちょうどサイコロをはめ込めそうな四角い窪みがある。' }));
+        }
+        return true;
+      }
+
+      if (room.id === 'classic_annex_2_bf_final_frame_room') {
+        if (!state.eventFlags?.annex2TakuroOniScare) {
+          setState(prev => ({
+            ...prev,
+            status: 'CHASE',
+            aoOniPos: { x: 5, y: 3 },
+            oniType: 'NORMAL',
+            eventFlags: { ...prev.eventFlags, annex2TakuroOniScare: true },
+            message: '紋章入りの額縁をじっと調べていると、後ろからヌッと恐ろしい冷気が漂ってきた……。恐る恐る振り返ると、そこには変わり果てた卓郎の顔をした異形（卓郎型青鬼）がいた！！！「ギシャァッ！」不気味な咆哮と共に襲いかかってきた！今すぐ走って逃げろ！！！'
+          }));
+          triggerScare();
+          return true;
+        }
+
+        if (state.eventFlags?.annex2FinalGateOpened) {
+          setState(prev => ({ ...prev, message: '紋章額の仕掛けは解かれ、前方の脱出用大扉が開いている。' }));
+          return true;
+        }
+
+        const piecesCount = state.inventory.filter(i => i === '青いピース').length;
+        if (piecesCount >= 3) {
+          setRooms(prevRooms => {
+            const newRooms = { ...prevRooms };
+            const newRoom = { ...rooms['classic_annex_2_bf_final_frame_room'] };
+            newRoom.layout = [...newRoom.layout];
+            newRoom.layout[0] = [...newRoom.layout[0]];
+            newRoom.layout[0][5] = { type: 'DOOR', id: Math.random().toString(36).substr(2, 9), targetRoom: 'classic_annex_2_escape_room' };
+            newRooms[newRoom.id] = newRoom;
+            return newRooms;
+          });
+          setState(prev => ({
+            ...prev,
+            inventory: prev.inventory.filter(i => i !== '青いピース'),
+            eventFlags: { ...prev.eventFlags, annex2FinalGateOpened: true },
+            message: '額縁に空いた３つの丸い穴に、集めた３枚の『青いピース』をすべてカチリカチリとはめ込んだ！ すると、前方正面の巨大な石壁がゴゴゴゴ……と上にせり上がり、最後の脱出通路への大扉が開放された！'
+          }));
+        } else {
+          setState(prev => ({
+            ...prev,
+            message: `目の前には、不気味な青い光を帯びた石の額が配置されている。円形の窪みが３つあり、すべてを「青いピース」で満たす必要がありそうだ。（現在所持：【${piecesCount}】/ 3枚）`
+          }));
+        }
+        return true;
+      }
+
       if (room.id === 'classic_annex_1f_doll_left') {
         if (state.inventory.includes('地下室の鍵') || state.eventFlags?.classic_annex_1f_doll_left_safe_unlocked) {
           setState(prev => ({ ...prev, message: '台座の金庫は開いている。' }));
@@ -1010,13 +1294,27 @@ export default function App() {
     }
 
     if (tile.type === 'WARDROBE' && room.id === 'classic_annex_bf_inner') {
-      if (state.inventory.includes('酢')) {
-        setState(prev => ({ ...prev, message: 'クローゼットの中は空っぽだ。卓郎は震えながら奥でうずくまっている。' }));
-        return true;
+      if (state.inventory.includes('酢') || state.eventFlags?.annexTakuroFollowAllowed) {
+        if (state.eventFlags?.annexLadderRoomVisited) {
+          if (state.eventFlags?.annexTakuroFollowing || state.eventFlags?.annexTakuroKidnapped) {
+            setState(prev => ({ ...prev, message: 'クローゼットの中は空っぽだ。' }));
+            return true;
+          }
+          setState(prev => ({
+            ...prev,
+            eventFlags: { ...prev.eventFlags, annexTakuroFollowing: true },
+            message: 'クローゼットの中の卓郎に話し掛けた！「なんだって！？奥に上がれそうなはしごを発見したのか！？ よし、俺が肩車をして高いハッチをこじ開けてやる！一緒に行こう、頼んだぞ！」 卓郎が心強い同行者として後ろに並んだ！'
+          }));
+          return true;
+        } else {
+          setState(prev => ({ ...prev, message: 'クローゼットを開けた。卓郎：「ひろし、まだ足がすくんで走れないんだ……。どこか外に繋がっていそうなハッチや抜け道ルート、はしごなどを別館B1階のどこかで見つけてきてくれ……。そしたら立ち上がるからな……」' }));
+          return true;
+        }
       }
       setState(prev => ({
         ...prev,
         inventory: [...prev.inventory, '酢'],
+        eventFlags: { ...prev.eventFlags, annex_pwd_cover_removed: true, annexTakuroFollowAllowed: true },
         message: 'クローゼットをそっと開けると、卓郎がいた！「ひひひ、ひろし！？ 脅かすなよ、腰が抜けるかと思ったぞ！俺はもう足がすくんで走れない…そうだ、キッチンの隅の戸棚で見つけて、怖くて握りしめてたこの『酢』をやるよ。何かの錆落としにでも使って、早く俺たちをここから出してくれ！」',
         moveCount: prev.moveCount + 1
       }));
@@ -1124,11 +1422,15 @@ export default function App() {
       const isAnnexLeft = room.id === 'classic_annex_1f_left';
       const isAnnexBFDark = room.id === 'classic_annex_bf_dark';
       const isAnnexFireplace = room.id === 'classic_annex_2f_right';
+      const isAnnex2Dark1 = room.id === 'classic_annex_2_bf_dark_room_1';
+      const isAnnex2Jail = room.id === 'classic_annex_2_bf_jail_corridor';
       
       const isLit = isHidden ? state.eventFlags?.hiddenLit :
                     isJail ? state.eventFlags?.jailLit :
                     isAnnexLeft ? state.eventFlags?.annex_1f_left_lit :
                     isAnnexBFDark ? state.eventFlags?.annex_bf_dark_lit :
+                    isAnnex2Dark1 ? state.eventFlags?.annex2Dark1Lit :
+                    isAnnex2Jail ? state.eventFlags?.annex2JailCorridorLit :
                     isAnnexFireplace ? state.eventFlags?.annexFireplaceLit : false;
       
       if (isLit) {
@@ -1145,6 +1447,17 @@ export default function App() {
           }
           return true;
         }
+        if (isAnnex2Dark1) {
+          if (!state.inventory.includes('青いピース') && !state.eventFlags?.annex2FirstPieceGet) {
+            setState(prev => ({
+              ...prev,
+              inventory: [...prev.inventory, '青いピース'],
+              eventFlags: { ...prev.eventFlags, annex2FirstPieceGet: true },
+              message: 'ロウソクの火で明るくなった洋館の地下暗室の隅、ボロボロの引き出しの隙間に挟まっていた【青いピース】（1点目）を引っ張り出して獲得した！'
+            }));
+            return true;
+          }
+        }
         setState(prev => ({ ...prev, message: 'ろうそくやランプはメラメラと周囲を明るく照らしている。' }));
         return true;
       }
@@ -1158,6 +1471,8 @@ export default function App() {
             jailLit: isJail ? true : prev.eventFlags?.jailLit,
             annex_1f_left_lit: isAnnexLeft ? true : prev.eventFlags?.annex_1f_left_lit,
             annex_bf_dark_lit: isAnnexBFDark ? true : prev.eventFlags?.annex_bf_dark_lit,
+            annex2Dark1Lit: isAnnex2Dark1 ? true : prev.eventFlags?.annex2Dark1Lit,
+            annex2JailCorridorLit: isAnnex2Jail ? true : prev.eventFlags?.annex2JailCorridorLit,
             annexFireplaceLit: isAnnexFireplace ? true : prev.eventFlags?.annexFireplaceLit,
           },
           message: isAnnexFireplace 
@@ -1267,6 +1582,7 @@ export default function App() {
     }
 
     if (tile.type === 'NPC') {
+      if (state.gameMode === 'ONI_POV') return true; // Bypass fixed NPCs
       if (room.id === 'classic_annex_1f_left') {
         if (!state.eventFlags?.annex_1f_left_lit) {
           setState(prev => ({
@@ -1342,6 +1658,28 @@ export default function App() {
           return false;
         }
       }
+
+      if (room.id === 'classic_annex_bf_hidden_passage' && tile.type === 'STAIRS_UP') {
+        if (!state.eventFlags?.annexTakuroFollowing) {
+          setState(prev => ({ ...prev, message: '天井の脱出ハッチだ。鍵がかかっている上に、高さ２.５メートルもあり、背を伸ばしても全く指先さえ届かない。肩車してくれるような相棒がいれば……。' }));
+          return false;
+        }
+        setState(prev => ({
+          ...prev,
+          isLocked: true,
+          message: '天井ハッチの下。卓郎ががっちりと肩車をしてくれた！「よし、ひろし、思い切り背を伸ばしてボルトを解除しろ！」 ぐっと体を支えられ、ハッチの古いロック部を酢で潤しながらついにこじ開けた！！！'
+        }));
+        setTimeout(() => {
+          setState(prev => ({
+            ...prev,
+            isLocked: false,
+            currentRoom: 'classic_annex_2_bf_corridor',
+            playerPos: { x: 5, y: 8 },
+            message: 'ハッチを這い上がると、そこはさらに深淵かつ複雑に設計された【第二別館】の地下通路だった……！「おいひろし、信じられない。まだ閉じ込められてるのかよ……！？」卓郎も呆然と立ちくすんでいる。'
+          }));
+        }, 2200);
+        return false;
+      }
       
       const nextRoom = rooms[tile.targetRoom];
       if (!nextRoom) {
@@ -1369,6 +1707,17 @@ export default function App() {
             customFlags.mikaChase = true;
             customFlags.escapedMikaChase = true; // allow basement access once they escape this
             customTriggerMsg = '子供部屋に入ると、怯え果て、変わり果てた美香がそこに床崩れしていた……。その次の瞬間！！背後のクローゼットから巨大なブルーベリー色の異形の影（青鬼）がキシャアアと咆哮して襲いかかってきた！！！今すぐ逃げてタンスに隠れろ！！！';
+          }
+          else if (tile.targetRoom === 'classic_annex_2_bf_big_jail' && !prev.eventFlags?.annex2BigJailOniBreakout) {
+            newStatus = 'CHASE';
+            newAoOniPos = { x: 5, y: 3 };
+            selectedOniType = 'NORMAL';
+            customFlags.annex2BigJailOniBreakout = true;
+            customTriggerMsg = '「ガシャーーーン！！！」突如として、大牢獄の奥から信じがたい怪力で鉄格子がねじ切られる破壊音が響き渡った！ 檻を自力でぶち破った無数の青鬼たちが大暴走をはじめ、血走った眼光で一斉に這い出てきた！！！ 急いで振り返って廊下へ逃げろ！！！';
+          }
+          else if (tile.targetRoom === 'classic_annex_bf_hidden_passage' && !prev.eventFlags?.annexLadderRoomVisited) {
+            customFlags.annexLadderRoomVisited = true;
+            customTriggerMsg = '別館の鍵穴付き通路の奥。ひっそりと冷たい鉄門をくぐると、天井の高い【脱出ハッチ室】に着いた！ 天井にハッチが見えるが、高すぎて手が届かない。クローゼットに逃げ込んでいる卓郎のところへ連れて行って欲しいと頼めば、彼が肩車してハッチを押し開けてくれそうだ！';
           }
           else if (prev.status === 'CHASE' || Math.random() > 0.85) {
             // Find door pointing back to the room player just exited
@@ -1470,6 +1819,10 @@ export default function App() {
         return false;
       }
 
+      if (room.id === 'classic_annex_2_escape_room') {
+        setState(prev => ({ ...prev, status: 'WIN', message: '地下秘密水路を駆け抜け、最後の大扉を開けて外へと這い上がった！ 朝焼けが差し込む静かな森……。ついに、ひろしと卓郎はあの悪夢の洋館から完全生還を果たしたのだ！！生還おめでとう！！！' }));
+        return false;
+      }
       setState(prev => ({ ...prev, status: 'WIN', message: '非常ハッチを押し上げ、ついに死線を超えて外の青空（森）へと逃げ伸びた！生還おめでとう！！' }));
       return false;
     }
@@ -1689,7 +2042,7 @@ export default function App() {
     if (state.status === 'START' || state.status === 'GAME_OVER' || state.status === 'WIN') return;
 
     // Trigger random chase while in the same room (8% chance per shift if moveCount is significant)
-    if (state.moveCount > 5 && state.status !== 'CHASE' && state.status !== 'HIDDEN' && !state.aoOniPos && !state.pendingOniSpawn) {
+    if (state.gameMode !== 'ONI_POV' && state.moveCount > 5 && state.status !== 'CHASE' && state.status !== 'HIDDEN' && !state.aoOniPos && !state.pendingOniSpawn) {
        if (Math.random() > 0.92) {
           const room = getRoom(state.currentRoom);
           const doorTiles = room ? getDoorsInRoom(room) : [];
@@ -1793,9 +2146,12 @@ export default function App() {
           const nextX = prev.aoOniPos.x + moveX;
           const nextY = prev.aoOniPos.y + moveY;
 
-          // Check for collision with player
+          // Check for collision with player (Only catch if player is Human)
           if (nextX === prev.playerPos.x && nextY === prev.playerPos.y) {
-            return { ...prev, status: 'GAME_OVER', message: '青鬼に捕まった...' };
+            const playerTag = prev.gameMode === 'ONI_POV' ? 'Enemy' : 'Human';
+            if (playerTag === 'Human') {
+              return { ...prev, status: 'GAME_OVER', message: '青鬼に捕まった...' };
+            }
           }
 
           return {
@@ -1933,10 +2289,10 @@ export default function App() {
 
   // Ao Oni POV Hunt Mode ticks: timer decrement and target AI movement
   useEffect(() => {
-    if (state.status === 'PLAYING' && state.gameMode === 'ONI_POV') {
+    if ((state.status === 'PLAYING' || state.status === 'CHASE') && state.gameMode === 'ONI_POV') {
       const timer = setInterval(() => {
         setState(prev => {
-          if (prev.status !== 'PLAYING' || prev.gameMode !== 'ONI_POV') return prev;
+          if ((prev.status !== 'PLAYING' && prev.status !== 'CHASE') || prev.gameMode !== 'ONI_POV') return prev;
 
           const nextTime = (prev.oniPovTimeLeft || 90) - 1;
           if (nextTime <= 0) {
@@ -1954,6 +2310,97 @@ export default function App() {
           let caughtSomeone = false;
           let caughtName = '';
           const reach = prev.oniType === 'GIANT' ? 1 : 0;
+          const newSteps: { x: number; y: number; room: string; timeLeft: number }[] = [];
+
+          const targetInSameRoom = targets.find(t => t.room === prev.currentRoom && !t.isCaught && !t.isHiding);
+          const currentRoomData = rooms[prev.currentRoom];
+
+          // 1. Synchronize target & Status
+          const newStatus = targetInSameRoom ? 'CHASE' : 'PLAYING';
+          const activeTargetId = targetInSameRoom ? targetInSameRoom.id : null;
+
+          // 2. Coordinated Attack NPC Blue Oni (Companion Wingman) Behavior State Management
+          let nextCompanionPos = prev.aoOniPos;
+
+          if (targetInSameRoom && currentRoomData) {
+            // Find all exits in the current room layout to use for cutting off and spawning
+            const exits: Position[] = [];
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+              for (let x = 0; x < GRID_WIDTH; x++) {
+                const type = currentRoomData.layout[y][x].type;
+                if (type === 'DOOR' || type === 'STAIRS_UP' || type === 'STAIRS_DOWN') {
+                  exits.push({ x, y });
+                }
+              }
+            }
+
+            // Spawn companion near exit / room bounds if they haven't been summoned yet for this chase
+            if (nextCompanionPos === null) {
+              let spawnCandidate = exits.length > 0 ? exits[Math.floor(Math.random() * exits.length)] : { x: 1, y: 1 };
+              // Shift slightly if spawning directly on top of the survival target
+              if (spawnCandidate.x === targetInSameRoom.pos.x && spawnCandidate.y === targetInSameRoom.pos.y) {
+                spawnCandidate = { x: (spawnCandidate.x + 2) % GRID_WIDTH, y: spawnCandidate.y };
+              }
+              nextCompanionPos = spawnCandidate;
+            } else {
+              //先回りAIのロジック (Intercept / Leading AI coordination)
+              let interceptPos = { ...targetInSameRoom.pos };
+              if (exits.length > 0) {
+                // Find the closest exit to the target's position
+                let minExitDist = 999;
+                let closestExit = exits[0];
+                for (const ex of exits) {
+                  const dist = Math.abs(ex.x - targetInSameRoom.pos.x) + Math.abs(ex.y - targetInSameRoom.pos.y);
+                  if (dist < minExitDist) {
+                    minExitDist = dist;
+                    closestExit = ex;
+                  }
+                }
+
+                // If target is closer than 6 tiles to the door, herd/block them! (退路を塞ぐ動き)
+                if (minExitDist <= 6) {
+                  interceptPos = { ...closestExit };
+                } else {
+                  // Predict leading direction based on simple movement vector (flee direction away from player)
+                  const dx_flee = Math.sign(targetInSameRoom.pos.x - prev.playerPos.x);
+                  const dy_flee = Math.sign(targetInSameRoom.pos.y - prev.playerPos.y);
+                  interceptPos = {
+                    x: Math.max(0, Math.min(GRID_WIDTH - 1, targetInSameRoom.pos.x + dx_flee)),
+                    y: Math.max(0, Math.min(GRID_HEIGHT - 1, targetInSameRoom.pos.y + dy_flee))
+                  };
+                }
+              }
+
+              // Pathfind / Step the companion towards the intercept intersection point
+              const pDirs = [
+                { x: nextCompanionPos.x + 1, y: nextCompanionPos.y },
+                { x: nextCompanionPos.x - 1, y: nextCompanionPos.y },
+                { x: nextCompanionPos.x, y: nextCompanionPos.y + 1 },
+                { x: nextCompanionPos.x, y: nextCompanionPos.y - 1 }
+              ];
+              const passablePDirs = pDirs.filter(pd => {
+                if (pd.x < 0 || pd.x >= GRID_WIDTH || pd.y < 0 || pd.y >= GRID_HEIGHT) return false;
+                const tile = currentRoomData.layout[pd.y][pd.x];
+                return tile.type !== 'WALL' && tile.type !== 'COLUMN' && tile.type !== 'HOLE' && tile.type !== 'WARDROBE';
+              });
+
+              if (passablePDirs.length > 0) {
+                let minPDist = 999;
+                let bestPDir = passablePDirs[0];
+                for (const pd of passablePDirs) {
+                  const dist = Math.abs(pd.x - interceptPos.x) + Math.abs(pd.y - interceptPos.y);
+                  if (dist < minPDist) {
+                    minPDist = dist;
+                    bestPDir = pd;
+                  }
+                }
+                nextCompanionPos = bestPDir;
+              }
+            }
+          } else {
+            // Revert companion position to stand-by when no target remains in the room
+            nextCompanionPos = null;
+          }
 
           const updatedTargets = targets.map(t => {
             if (t.isCaught) return t;
@@ -1963,6 +2410,10 @@ export default function App() {
 
             const targetRoomData = rooms[t.room];
             if (!targetRoomData) return t;
+
+            const originalX = t.pos.x;
+            const originalY = t.pos.y;
+            const originalRoom = t.room;
 
             // If in same room as Ao Oni (the player), run away!
             if (t.room === prev.currentRoom) {
@@ -1980,26 +2431,56 @@ export default function App() {
               });
 
               if (passableNeighbors.length > 0) {
-                // Maximize distance from player (the client playing as Ao Oni)
-                let bestMoves: Position[] = [];
-                let maxDist = -1;
-                for (const m of passableNeighbors) {
-                  const dist = Math.abs(m.x - prev.playerPos.x) + Math.abs(m.y - prev.playerPos.y);
-                  if (dist > maxDist) {
-                    maxDist = dist;
-                    bestMoves = [m];
-                  } else if (dist === maxDist) {
-                    bestMoves.push(m);
-                  }
-                }
+                const isPanic = Math.random() < 0.15;
+                let chosenMove = passableNeighbors[0];
 
-                const chosenMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
+                if (isPanic) {
+                  // Panic state: pick the adjacent tile that has the least options ahead (dead ends)
+                  let minNextOptions = 999;
+                  let panicMoves: Position[] = [];
+
+                  for (const m of passableNeighbors) {
+                    const nextDirs = [
+                      { x: m.x + 1, y: m.y },
+                      { x: m.x - 1, y: m.y },
+                      { x: m.x, y: m.y + 1 },
+                      { x: m.x, y: m.y - 1 }
+                    ];
+                    const nextPassable = nextDirs.filter(nd => {
+                      if (nd.x < 0 || nd.x >= 12 || nd.y < 0 || nd.y >= 10) return false;
+                      const tile = targetRoomData.layout[nd.y][nd.x];
+                      return tile.type !== 'WALL' && tile.type !== 'COLUMN' && tile.type !== 'HOLE' && tile.type !== 'WARDROBE';
+                    });
+                    if (nextPassable.length < minNextOptions) {
+                      minNextOptions = nextPassable.length;
+                      panicMoves = [m];
+                    } else if (nextPassable.length === minNextOptions) {
+                      panicMoves.push(m);
+                    }
+                  }
+                  chosenMove = panicMoves[Math.floor(Math.random() * panicMoves.length)];
+                } else {
+                  // Normal escaping: linear fleeing, maximize Manhattan distance from player
+                  let bestMoves: Position[] = [];
+                  let maxDist = -1;
+                  for (const m of passableNeighbors) {
+                    const dist = Math.abs(m.x - prev.playerPos.x) + Math.abs(m.y - prev.playerPos.y);
+                    if (dist > maxDist) {
+                      maxDist = dist;
+                      bestMoves = [m];
+                    } else if (dist === maxDist) {
+                      bestMoves.push(m);
+                    }
+                  }
+                  chosenMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
+                }
                 
                 // Portal transition logic: if they choose a door tile, they escape to that room!
                 const stepTile = targetRoomData.layout[chosenMove.y][chosenMove.x];
                 if ((stepTile.type === 'DOOR' || stepTile.type === 'STAIRS_UP' || stepTile.type === 'STAIRS_DOWN') && stepTile.targetRoom && Math.random() < 0.45) {
                   const nextPortRoom = rooms[stepTile.targetRoom];
                   if (nextPortRoom) {
+                    newSteps.push({ x: originalX, y: originalY, room: originalRoom, timeLeft: 4 });
                     return {
                       ...t,
                       room: stepTile.targetRoom,
@@ -2014,8 +2495,10 @@ export default function App() {
                   'キャーー！！追ってこないで！',
                   'ヒィィッ！青く光るあいつがすぐそこに！',
                   'お、お、追ってくる！逃げろ！',
-                  'うわあああっ！食べられるー！'
+                  'うわあああっ！食べられるー！',
+                  '行き止まりだっ！？…どうしよう！'
                 ];
+                newSteps.push({ x: originalX, y: originalY, room: originalRoom, timeLeft: 4 });
                 return {
                   ...t,
                   pos: chosenMove,
@@ -2037,9 +2520,11 @@ export default function App() {
                   return tile.type !== 'WALL' && tile.type !== 'COLUMN' && tile.type !== 'HOLE' && tile.type !== 'WARDROBE';
                 });
                 if (passableNeighbors.length > 0) {
+                  const chosenMove = passableNeighbors[Math.floor(Math.random() * passableNeighbors.length)];
+                  newSteps.push({ x: originalX, y: originalY, room: originalRoom, timeLeft: 4 });
                   return {
                     ...t,
-                    pos: passableNeighbors[Math.floor(Math.random() * passableNeighbors.length)],
+                    pos: chosenMove,
                     speech: undefined
                   };
                 }
@@ -2048,10 +2533,15 @@ export default function App() {
 
             return t;
           }).map(t => {
-            // Check if walking into the player's position
+            // Check if walking into the player's position OR the companion wingman NPC Oni's position to capture
             if (!t.isCaught && !t.isHiding && t.room === prev.currentRoom) {
-              const distance = Math.abs(t.pos.x - prev.playerPos.x) + Math.abs(t.pos.y - prev.playerPos.y);
-              if (distance <= reach) {
+              const distanceToPlayer = Math.abs(t.pos.x - prev.playerPos.x) + Math.abs(t.pos.y - prev.playerPos.y);
+              let distanceToCompanion = 999;
+              if (nextCompanionPos) {
+                distanceToCompanion = Math.abs(t.pos.x - nextCompanionPos.x) + Math.abs(t.pos.y - nextCompanionPos.y);
+              }
+
+              if (distanceToPlayer <= reach || distanceToCompanion <= reach) {
                 caughtSomeone = true;
                 caughtName = t.name;
                 return { ...t, isCaught: true };
@@ -2060,12 +2550,19 @@ export default function App() {
             return t;
           });
 
+          // Tick down existing floor footsteps and merge new footsteps
+          let updatedFootsteps = (prev.oniPovFootsteps || [])
+            .map(f => ({ ...f, timeLeft: f.timeLeft - 1 }))
+            .filter(f => f.timeLeft > 0);
+
+          updatedFootsteps = [...updatedFootsteps, ...newSteps];
+
           const remainingCount = updatedTargets.filter(t => !t.isCaught).length;
 
           if (caughtSomeone) {
             triggerScare();
             const currentRoomName = rooms[prev.currentRoom]?.name || '洋館のどこか';
-            const logEntry = `【捕獲】「${caughtName}」を【${currentRoomName}】で接触・捕獲した！`;
+            const logEntry = `【挟み撃ち捕獲】プレイヤーとNPC青鬼による完璧な連携！「${caughtName}」を【${currentRoomName}】で挟撃・捕獲した！`;
             let updatedLogs = [...(prev.oniPovLogs || []), logEntry];
 
             if (remainingCount === 0) {
@@ -2076,7 +2573,10 @@ export default function App() {
                 oniPovTargets: updatedTargets,
                 oniPovLogs: updatedLogs,
                 oniPovTimeLeft: nextTime,
+                oniPovFootsteps: updatedFootsteps,
                 status: 'PLAYING',
+                oniPovActiveTargetId: null,
+                aoOniPos: null,
                 message: `【ハントミッション完了！】最後に残った「${caughtName}」を完全に捕獲した！生存者全員を捕えきった！このまま洋館を自由に散策・移動可能です。`
               };
             } else {
@@ -2085,7 +2585,11 @@ export default function App() {
                 oniPovTargets: updatedTargets,
                 oniPovLogs: updatedLogs,
                 oniPovTimeLeft: nextTime,
-                message: `「ギャーーッ！」逃げ回っていた【${caughtName}】を捕獲した！ 残り生存者: ${remainingCount}人！残る獲物を追え！`
+                oniPovFootsteps: updatedFootsteps,
+                status: 'PLAYING', // keep status clean after a catch
+                oniPovActiveTargetId: null,
+                aoOniPos: null,
+                message: `「ギャーーッ！」連携作戦が見事に成功！逃げ回っていた【${caughtName}】を捕獲した！ 残り生存者: ${remainingCount}人！残る獲物を追え！`
               };
             }
           }
@@ -2093,7 +2597,11 @@ export default function App() {
           return {
             ...prev,
             oniPovTargets: updatedTargets,
-            oniPovTimeLeft: nextTime
+            oniPovTimeLeft: nextTime,
+            oniPovFootsteps: updatedFootsteps,
+            status: newStatus,
+            oniPovActiveTargetId: activeTargetId,
+            aoOniPos: nextCompanionPos
           };
         });
       }, 1000);
@@ -2375,19 +2883,30 @@ export default function App() {
           <div className="grid grid-cols-12 w-full h-full">
             {getRoom(state.currentRoom).layout.map((row, y) => 
                row.map((tile, x) => {
-                 const isDarkRoom = (state.currentRoom === 'mansion_1f_hidden_room' && !state.eventFlags?.hiddenLit) ||
+                 const isDarkRoom = (state.currentRoom === 'mansion_1f_hidden_room' && !state.eventFlags?.hiddenLit) || (state.currentRoom === 'classic_annex_2_bf_dark_room_1' && !state.eventFlags?.annex2Dark1Lit) || (state.currentRoom === 'classic_annex_2_bf_jail_corridor' && !state.eventFlags?.annex2JailCorridorLit) ||
                                     (state.currentRoom === 'mansion_bf_jail' && !state.eventFlags?.jailLit) ||
                                     (state.currentRoom === 'classic_annex_1f_left' && !state.eventFlags?.annex_1f_left_lit) ||
                                     (state.currentRoom === 'classic_annex_bf_dark' && !state.eventFlags?.annex_bf_dark_lit) ||
                                     (state.currentRoom === 'classic_annex_bf_breaker' && !state.eventFlags?.annexPowerRestored);
                  const dist = Math.abs(x - state.playerPos.x) + Math.abs(y - state.playerPos.y);
                  const isVisible = !isDarkRoom || dist <= 1;
+                 const step = state.oniPovFootsteps?.find(f => f.x === x && f.y === y && f.room === state.currentRoom && f.timeLeft > 0);
                  return (
                    <div 
                      key={`${x}-${y}`}
-                     className={`transition-all duration-300 ${!isVisible ? 'brightness-5 grayscale opacity-10 pointer-events-none' : ''}`}
+                     className={`transition-all duration-300 relative ${!isVisible ? 'brightness-5 grayscale opacity-10 pointer-events-none' : ''}`}
                    >
-                     <Tile type={tile.type} />
+                     <Tile type={(tile.type === 'NPC' && state.gameMode === 'ONI_POV') ? 'FLOOR' : tile.type} />
+                     {state.gameMode === 'ONI_POV' && step && (
+                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-pulse">
+                         <span 
+                           className="text-[14px] select-none text-blue-300 drop-shadow-[0_0_4px_rgba(59,130,246,0.8)] filter transition-opacity duration-300"
+                           style={{ opacity: Math.min(1.0, step.timeLeft / 4) }}
+                         >
+                           🐾
+                         </span>
+                       </div>
+                     )}
                    </div>
                  );
                })
@@ -2403,7 +2922,7 @@ export default function App() {
                     y: state.playerPos.y * TILE_SIZE + (TILE_SIZE - 40) / 2 
                 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 25 }}
-                className="absolute z-20"
+                className="absolute z-40"
               >
                 {state.gameMode === 'ONI_POV' ? (
                   <Character 
@@ -2417,8 +2936,8 @@ export default function App() {
                 )}
               </motion.div>
 
-              {/* Ao Oni (CPU-Controlled Chaser in standard game) */}
-              {state.gameMode !== 'ONI_POV' && state.aoOniPos && (
+              {/* Ao Oni (CPU-Controlled Chaser in standard game, or NPC Companion in ONI_POV) */}
+              {state.aoOniPos && (
                 <motion.div
                   animate={{ 
                       x: state.aoOniPos.x * TILE_SIZE + (TILE_SIZE - 40) / 2, 
@@ -2431,7 +2950,7 @@ export default function App() {
                     type="AO_ONI" 
                     isActive={state.status === 'CHASE'} 
                     oniType={state.oniType || 'NORMAL'} 
-                    speech={state.oniSpeech} 
+                    speech={state.gameMode === 'ONI_POV' ? 'ハサミウチダ！逃サン！' : state.oniSpeech} 
                   />
                 </motion.div>
               )}
@@ -2448,7 +2967,7 @@ export default function App() {
                         y: t.pos.y * TILE_SIZE + (TILE_SIZE - 40) / 2
                       }}
                       transition={{ type: 'spring', stiffness: 180, damping: 20 }}
-                      className="absolute z-15"
+                      className="absolute z-30"
                     >
                       <Character type="PLAYER" humanType={t.type} speech={t.speech} name={t.name} />
                     </motion.div>

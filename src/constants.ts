@@ -460,6 +460,9 @@ export const getClassicRooms = (): Record<string, RoomData> => {
       l[6][9] = t('SHELF'); // Defaced doll pile
       l[2][8] = t('COLUMN');
       l[7][2] = t('COLUMN');
+      l[4][1] = t('PLATE'); // Light Switch
+      l[8][9] = t('DOOR', 'classic_annex_2_1f_corridor'); // Hidden Backdoor
+      l[8][9].requiredKey = '裏口の鍵';
     }),
 
     classic_annex_2f_corridor: createRoom('classic_annex_2f_corridor', '別館2F・廊下', { x: 1, y: 2 }, (l) => {
@@ -526,12 +529,15 @@ export const getClassicRooms = (): Record<string, RoomData> => {
       l[1][5] = t('DOOR', 'classic_annex_bf_inner'); // Password locked door 1237
       l[1][5].requiredKey = 'しおり配列ロック';
       l[1][4] = t('SAFE'); // Control plate screw cover
+      l[7][9] = t('SHELF'); // Heavy shelf to slide
     }),
 
     classic_annex_bf_inner: createRoom('classic_annex_bf_inner', '別館B1F・奥の部屋(卓郎屋)', { x: 5, y: 8 }, (l) => {
       l[9][5] = t('DOOR', 'classic_annex_bf_pwd_door');
       l[5][11] = t('DOOR', 'classic_annex_bf_middle');
       l[1][5] = t('WARDROBE'); // Wardrobe containing Takuro
+      l[1][1] = t('DOOR', 'classic_annex_bf_hidden_passage'); // Locked secret passage door
+      l[1][1].requiredKey = '隠し扉の鍵';
     }),
 
     classic_annex_bf_middle: createRoom('classic_annex_bf_middle', '別館B1F・真ん中の部屋', { x: 1, y: 5 }, (l) => {
@@ -549,8 +555,125 @@ export const getClassicRooms = (): Record<string, RoomData> => {
       l[4][5] = t('JAIL'); // Rusted grid lock
       l[2][5] = t('KEY');  // Holds Cell exit Key inside target
       l[2][5].itemId = '格子戸の鍵';
-      l[1][9] = t('EXIT'); // Final gate
-      l[1][9].requiredKey = '格子戸の鍵';
+      l[2][2] = t('PUZZLE'); // Color button sequence panel
+      l[8][5] = t('STAIRS_UP', 'classic_annex_bf_bath'); // Ladder to return back up to bath
+    }),
+
+    classic_annex_bf_hidden_passage: createRoom('classic_annex_bf_hidden_passage', '別館B1F・隠し通路', { x: 1, y: 5 }, (l) => {
+      l[5][0] = t('DOOR', 'classic_annex_bf_inner');
+      l[5][11] = t('DOOR', 'classic_annex_bf_ladder_room');
+    }),
+
+    classic_annex_bf_ladder_room: createRoom('classic_annex_bf_ladder_room', '別館B1F・はしごの間', { x: 1, y: 5 }, (l) => {
+      l[5][0] = t('DOOR', 'classic_annex_bf_hidden_passage');
+      l[1][5] = t('STAIRS_UP', 'classic_annex_2_1f_corridor'); // Ladder lead out to backyard (Annex 2)
+    }),
+
+    // --- CLASSIC ANNEX 2 (第二別館) ROOMS ---
+    classic_annex_2_1f_corridor: createRoom('classic_annex_2_1f_corridor', '第二別館1F・通路', { x: 5, y: 8 }, (l) => {
+      l[9][5] = t('DOOR', 'classic_annex_1f_doll_right'); // Backdoor entrance from Annex 1 (unlocked by Backdoor Key / 裏口の鍵)
+      l[1][1] = t('STAIRS_UP', 'classic_annex_2_2f_corridor');
+      l[5][11] = t('DOOR', 'classic_annex_2_1f_altar_room');
+      l[5][5] = t('HOLE', 'classic_annex_2_1f_ladder_bottom'); // Hole in floor
+    }),
+
+    classic_annex_2_1f_ladder_bottom: createRoom('classic_annex_2_1f_ladder_bottom', '第二別館1F・はしご下の一室', { x: 5, y: 2 }, (l) => {
+      l[1][5] = t('STAIRS_UP', 'classic_annex_2_1f_corridor'); // Rope ladder back up
+      l[4][5] = t('SHELF'); // Frame holding Blue Piece
+    }),
+
+    classic_annex_2_1f_altar_room: createRoom('classic_annex_2_1f_altar_room', '第二別館1F・祭壇の間', { x: 1, y: 5 }, (l) => {
+      l[5][0] = t('DOOR', 'classic_annex_2_1f_corridor');
+      l[1][5] = t('DESK'); // Throne / Altar
+      // Buttons representing the chairs
+      l[4][2] = t('CHAIR');  // Chair button Left-Back
+      l[4][4] = t('CHAIR');  // Chair button Center-Back
+      l[4][6] = t('CHAIR');  // Chair button Center-Front
+      l[4][8] = t('CHAIR'); // Chair button Right-Front
+    }),
+
+    classic_annex_2_2f_corridor: createRoom('classic_annex_2_2f_corridor', '第二別館2F・通路', { x: 1, y: 2 }, (l) => {
+      l[1][1] = t('STAIRS_DOWN', 'classic_annex_2_1f_corridor');
+      l[5][0] = t('DOOR', 'classic_annex_2_2f_closet_room');
+      l[5][6] = t('DOOR', 'classic_annex_2_2f_study'); // Study (requires Study Key / 書斎の鍵)
+      l[5][6].requiredKey = '書斎の鍵';
+      l[5][11] = t('DOOR', 'classic_annex_2_2f_hidden_room_entrance');
+    }),
+
+    classic_annex_2_2f_closet_room: createRoom('classic_annex_2_2f_closet_room', '第二別館2F・一番階段に近い部屋', { x: 10, y: 5 }, (l) => {
+      l[5][11] = t('DOOR', 'classic_annex_2_2f_corridor');
+      l[5][3] = t('HOLE', 'classic_annex_2_1f_dice_pic_room'); // Drops down to 1F dice pic room
+      l[2][2] = t('KEY'); // Blue Piece 1 on the floor
+      l[2][2].itemId = '青いピース';
+    }),
+
+    classic_annex_2_1f_dice_pic_room: createRoom('classic_annex_2_1f_dice_pic_room', '第二別館1F・スライド目の一室', { x: 5, y: 2 }, (l) => {
+      l[1][5] = t('DOOR', 'classic_annex_2_1f_corridor');
+      l[4][5] = t('PUZZLE'); // Dice Frame / Picture
+    }),
+
+    classic_annex_2_2f_hidden_room_entrance: createRoom('classic_annex_2_2f_hidden_room_entrance', '第二別館2F・奥の部屋', { x: 1, y: 5 }, (l) => {
+      l[5][0] = t('DOOR', 'classic_annex_2_2f_corridor');
+      l[1][10] = t('WALL_SECRET'); // Wall slice for secret entrance
+    }),
+
+    classic_annex_2_2f_closet_hiding_room: createRoom('classic_annex_2_2f_closet_hiding_room', '第二別館2F・隠しクローゼット部屋', { x: 5, y: 8 }, (l) => {
+      l[9][5] = t('DOOR', 'classic_annex_2_2f_hidden_room_entrance');
+      l[1][5] = t('WARDROBE'); // Wardrobe containing hiding spot
+      l[4][5] = t('DESK'); // Desk with Dice
+    }),
+
+    classic_annex_2_2f_study: createRoom('classic_annex_2_2f_study', '第二別館2F・書斎', { x: 5, y: 8 }, (l) => {
+      l[9][5] = t('DOOR', 'classic_annex_2_2f_corridor');
+      l[1][5] = t('SHELF'); // Shelf containing too-high Safe
+      l[1][7] = t('PLATE'); // 4 screws cover
+      l[5][5] = t('CHAIR'); // Movable chair
+    }),
+
+    classic_annex_2_bf_corridor: createRoom('classic_annex_2_bf_corridor', '第二別館B1F・通路', { x: 5, y: 8 }, (l) => {
+      l[9][5] = t('STAIRS_UP', 'classic_annex_2_1f_altar_room'); // Back to altar stairs
+      l[5][0] = t('DOOR', 'classic_annex_2_bf_jail_corridor'); // Jail cell corridor
+      l[5][11] = t('DOOR', 'classic_annex_2_bf_dark_room_1'); // Dark room 1
+      l[1][5] = t('DOOR', 'classic_annex_2_bf_final_frame_room'); // Top final frame room
+      l[1][1] = t('DOOR', 'classic_annex_2_bf_sleeping_room'); // Sleeping Room
+    }),
+
+    classic_annex_2_bf_dark_room_1: createRoom('classic_annex_2_bf_dark_room_1', '第二別館B1F・地下暗室1', { x: 1, y: 5 }, (l) => {
+      l[5][0] = t('DOOR', 'classic_annex_2_bf_corridor');
+      l[4][5] = t('CANDLE'); // Room Candle
+    }),
+
+    classic_annex_2_bf_jail_corridor: createRoom('classic_annex_2_bf_jail_corridor', '第二別館B1F・牢屋前通路', { x: 10, y: 5 }, (l) => {
+      l[5][11] = t('DOOR', 'classic_annex_2_bf_corridor');
+      l[4][5] = t('JAIL'); // Jail bars blocking key
+      l[1][1] = t('KEY'); // Study Key out of reach
+      l[1][1].itemId = '書斎の鍵';
+      l[1][5] = t('CANDLE'); // Room Candle
+      l[1][10] = t('DOOR', 'classic_annex_2_bf_big_jail'); // Door to big jail
+      l[1][10].requiredKey = '別館2の地下室の鍵'; // Required key
+    }),
+
+    classic_annex_2_bf_sleeping_room: createRoom('classic_annex_2_bf_sleeping_room', '第二別館B1F・奇妙な寝室', { x: 10, y: 8 }, (l) => {
+      l[9][10] = t('DOOR', 'classic_annex_2_bf_corridor');
+      // 4 beds representing curtains and shapes
+      l[2][2] = t('BED');
+      l[2][8] = t('BED');
+      l[6][2] = t('BED');
+      l[6][8] = t('BED');
+    }),
+
+    classic_annex_2_bf_big_jail: createRoom('classic_annex_2_bf_big_jail', '第二別館B1F・大牢獄の広間', { x: 10, y: 5 }, (l) => {
+      l[5][11] = t('DOOR', 'classic_annex_2_bf_jail_corridor');
+      l[4][5] = t('JAIL'); // Large jail holding many Ao Oni
+    }),
+
+    classic_annex_2_bf_final_frame_room: createRoom('classic_annex_2_bf_final_frame_room', '第二別館B1F・紋章額の間', { x: 5, y: 8 }, (l) => {
+      l[9][5] = t('DOOR', 'classic_annex_2_bf_corridor');
+      l[4][5] = t('PUZZLE'); // Final frame needing 3 Blue Pieces
+    }),
+
+    classic_annex_2_escape_room: createRoom('classic_annex_2_escape_room', '第二別館・脱出秘密地下水路', { x: 5, y: 8 }, (l) => {
+      l[1][5] = t('EXIT'); // Real final exit gate (no key, escape from Takuro-Oni)
     })
   };
   return rooms;
